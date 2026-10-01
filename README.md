@@ -10,11 +10,11 @@ The preserved C implementation is on the [master branch](https://github.com/Sait
 
 ## Current progress
 
-Implemented through **SET & GET**, including a shared in-memory store and binary-safe values. The next exercise is **Expiry**.
+Implemented through **Expiry**: PING, ECHO, SET, GET, and SET with PX milliseconds. The next exercise is **Create a list**.
 
-`app/main.py` contains the server. Each client gets a worker thread and a buffered reader; complete RESP commands are consumed individually even when TCP splits or combines their bytes. Responses use `sendall`. Command dispatch supports PING, ECHO, SET, and GET. A shared lock protects store access; missing keys return null bulk strings. Threads are daemon threads, so stopping the process stops them as well.
+`app/main.py` contains the server. Each client gets a worker thread and a buffered reader; complete RESP commands are consumed individually even when TCP splits or combines their bytes. Responses use `sendall`. Command dispatch supports PING, ECHO, SET, and GET. A shared lock protects store access and expiry checks. Values carry optional monotonic deadlines; expired entries are deleted on GET and return null bulk strings, like missing keys. Plain SET clears a previous expiry. Data lives only in process memory. Threads are daemon threads, so stopping the process stops them as well.
 
-Run the socket integration checks with `python3 -m unittest discover -s tests -v`. They cover repeated and combined commands, fragmented input, idle concurrent clients, half-close, and malformed input isolation.
+Run the socket integration checks with `python3 -m unittest discover -s tests -v`. They cover repeated and combined commands, fragmented input, idle concurrent clients, half-close, malformed input isolation, binary and empty values, cross-client storage, and expiry. Clock-controlled tests verify the expiry boundary and replacement of deadlines without sleeping.
 
 ## Submit an exercise
 

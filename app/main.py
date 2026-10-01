@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 
 
 MAX_LINE = 64 * 1024
@@ -63,16 +64,38 @@ def execute_command(arguments):
             return b"-ERR wrong number of arguments for 'echo' command\r\n"
         return bulk_string(arguments[1])
     if command == b"SET":
-        if len(arguments) != 3:
+        if len(arguments) not in (3, 5):
             return b"-ERR wrong number of arguments for 'set' command\r\n"
+        milliseconds = None
+        if len(arguments) == 5:
+            if arguments[3].upper() != b"PX":
+                return b"-ERR syntax error\r\n"
+            try:
+                milliseconds = int(arguments[4])
+            except ValueError:
+                return b"-ERR invalid expire time in 'set' command\r\n"
+            if not 0 < milliseconds <= 2**63 - 1:
+                return b"-ERR invalid expire time in 'set' command\r\n"
         with store_lock:
-            store[arguments[1]] = arguments[2]
+            deadline = None
+            if milliseconds is not None:
+                deadline = time.monotonic() + milliseconds / 1000
+            # A plain SET replaces the old deadline as well as the value.
+            store[arguments[1]] = (arguments[2], deadline)
         return b"+OK\r\n"
     if command == b"GET":
         if len(arguments) != 2:
             return b"-ERR wrong number of arguments for 'get' command\r\n"
+        key = arguments[1]
         with store_lock:
-            value = store.get(arguments[1])
+            entry = store.get(key)
+            value = None
+            if entry is not None:
+                stored_value, deadline = entry
+                if deadline is not None and time.monotonic() >= deadline:
+                    del store[key]
+                else:
+                    value = stored_value
         return bulk_string(value)
     return b"-ERR unknown command\r\n"
 

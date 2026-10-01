@@ -82,6 +82,15 @@ class ServerTests(unittest.TestCase):
             error = b"-ERR wrong number of arguments for 'set' command\r\n"
             self.assertEqual(receive(writer, len(error) + 7), error + PONG)
 
+    def test_expiry_over_socket(self):
+        with self.connect() as client:
+            client.sendall(command(b"SET", b"ttl", b"value", b"pX", b"150")
+                           + command(b"GET", b"ttl"))
+            self.assertEqual(receive(client, 16), b"+OK\r\n$5\r\nvalue\r\n")
+            time.sleep(0.2)
+            client.sendall(command(b"GET", b"ttl"))
+            self.assertEqual(receive(client, 5), b"$-1\r\n")
+
     def test_fragmented_command(self):
         with self.connect() as client:
             client.sendall(PING[:-1])
