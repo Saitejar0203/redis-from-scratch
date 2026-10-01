@@ -42,14 +42,33 @@ def read_command(reader):
     return arguments
 
 
+def bulk_string(value):
+    if value is None:
+        return b"$-1\r\n"
+    return b"$" + str(len(value)).encode() + b"\r\n" + value + b"\r\n"
+
+
+def execute_command(arguments):
+    if not arguments:
+        return b"-ERR empty command\r\n"
+    command = arguments[0].upper()
+    if command == b"PING":
+        return b"+PONG\r\n"
+    if command == b"ECHO":
+        if len(arguments) != 2:
+            return b"-ERR wrong number of arguments for 'echo' command\r\n"
+        return bulk_string(arguments[1])
+    return b"-ERR unknown command\r\n"
+
+
 def handle_client(connection):
     with connection:
         try:
             # Buffered reads handle commands split across TCP reads and retain
             # later commands when several arrive together.
             with connection.makefile("rb") as reader:
-                while read_command(reader) is not None:
-                    connection.sendall(b"+PONG\r\n")
+                while (arguments := read_command(reader)) is not None:
+                    connection.sendall(execute_command(arguments))
         except (OSError, ValueError):
             # A disconnected client or malformed request ends this connection.
             return

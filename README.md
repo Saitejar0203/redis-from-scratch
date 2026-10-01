@@ -10,9 +10,9 @@ The preserved C implementation is on the [master branch](https://github.com/Sait
 
 ## Current progress
 
-Completed through **Handle concurrent clients**: port binding, one PING, repeated PINGs, and independent client threads. The next exercise is **ECHO**.
+Implemented through **ECHO**, including binary-safe bulk-string responses. The next exercise is **SET & GET**.
 
-`app/main.py` contains the server. Each client gets a worker thread and a buffered reader; complete RESP commands are consumed individually even when TCP splits or combines their bytes. Responses use `sendall`. At this stage every complete command receives PONG; command dispatch comes next. Threads are daemon threads, so stopping the process stops them as well.
+`app/main.py` contains the server. Each client gets a worker thread and a buffered reader; complete RESP commands are consumed individually even when TCP splits or combines their bytes. Responses use `sendall`. Command dispatch supports PING and ECHO, with errors for unknown commands or invalid ECHO arguments. Threads are daemon threads, so stopping the process stops them as well.
 
 Run the socket integration checks with `python3 -m unittest discover -s tests -v`. They cover repeated and combined commands, fragmented input, idle concurrent clients, half-close, and malformed input isolation.
 

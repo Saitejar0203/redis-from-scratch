@@ -8,6 +8,13 @@ PING = b"*1\r\n$4\r\nPING\r\n"
 PONG = b"+PONG\r\n"
 
 
+def command(*arguments):
+    return b"*" + str(len(arguments)).encode() + b"\r\n" + b"".join(
+        b"$" + str(len(value)).encode() + b"\r\n" + value + b"\r\n"
+        for value in arguments
+    )
+
+
 def receive(sock, count):
     data = b""
     while len(data) < count:
@@ -49,6 +56,16 @@ class ServerTests(unittest.TestCase):
                 self.assertEqual(receive(client, 7), PONG)
             client.sendall(PING * 200)
             self.assertEqual(receive(client, 1400), PONG * 200)
+
+    def test_echo_binary_empty_and_bad_arguments(self):
+        with self.connect() as client:
+            for value in (b"", b"hello world", b"\x00\xff\r\nPING"):
+                client.sendall(command(b"eChO", value))
+                expected = b"$" + str(len(value)).encode() + b"\r\n" + value + b"\r\n"
+                self.assertEqual(receive(client, len(expected)), expected)
+            client.sendall(command(b"ECHO") + PING)
+            error = b"-ERR wrong number of arguments for 'echo' command\r\n"
+            self.assertEqual(receive(client, len(error) + 7), error + PONG)
 
     def test_fragmented_command(self):
         with self.connect() as client:
