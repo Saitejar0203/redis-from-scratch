@@ -67,6 +67,21 @@ class ServerTests(unittest.TestCase):
             error = b"-ERR wrong number of arguments for 'echo' command\r\n"
             self.assertEqual(receive(client, len(error) + 7), error + PONG)
 
+    def test_set_get_shared_clients_and_overwrite(self):
+        key = b"shared-key"
+        with self.connect() as writer, self.connect() as reader:
+            reader.sendall(command(b"GET", b"missing-key"))
+            self.assertEqual(receive(reader, 5), b"$-1\r\n")
+            for value in (b"first", b"", b"\xff\x00\r\n"):
+                writer.sendall(command(b"sEt", key, value))
+                self.assertEqual(receive(writer, 5), b"+OK\r\n")
+                reader.sendall(command(b"gEt", key))
+                expected = b"$" + str(len(value)).encode() + b"\r\n" + value + b"\r\n"
+                self.assertEqual(receive(reader, len(expected)), expected)
+            writer.sendall(command(b"SET", key) + PING)
+            error = b"-ERR wrong number of arguments for 'set' command\r\n"
+            self.assertEqual(receive(writer, len(error) + 7), error + PONG)
+
     def test_fragmented_command(self):
         with self.connect() as client:
             client.sendall(PING[:-1])

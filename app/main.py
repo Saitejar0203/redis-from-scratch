@@ -5,6 +5,10 @@ import threading
 MAX_LINE = 64 * 1024
 MAX_BULK = 1024 * 1024
 
+# All client threads share one in-memory store and one lock.
+store = {}
+store_lock = threading.Lock()
+
 
 def read_line(reader):
     """Read a CRLF-terminated line; the reader retains any following bytes."""
@@ -58,6 +62,18 @@ def execute_command(arguments):
         if len(arguments) != 2:
             return b"-ERR wrong number of arguments for 'echo' command\r\n"
         return bulk_string(arguments[1])
+    if command == b"SET":
+        if len(arguments) != 3:
+            return b"-ERR wrong number of arguments for 'set' command\r\n"
+        with store_lock:
+            store[arguments[1]] = arguments[2]
+        return b"+OK\r\n"
+    if command == b"GET":
+        if len(arguments) != 2:
+            return b"-ERR wrong number of arguments for 'get' command\r\n"
+        with store_lock:
+            value = store.get(arguments[1])
+        return bulk_string(value)
     return b"-ERR unknown command\r\n"
 
 
