@@ -6,7 +6,7 @@ Based on the [CodeCrafters Redis challenge](https://app.codecrafters.io/courses/
 
 ## Status
 
-C starter configured. No exercises implemented yet; the first-stage code in `src/main.c` remains commented out.
+The first stage, Bind to a port, is implemented in `src/main.c`. It listens on TCP port 6379, accepts one connection, and exits. No Redis commands are implemented yet.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Requires a C compiler and CMake. On macOS, install the Xcode Command Line Tools.
 ./your_program.sh
 ```
 
-The script builds into `build/` and runs the starter, which currently prints a diagnostic message and exits. Once implemented, the server will listen on port 6379.
+The script builds into `build/` and runs the starter. It listens on port 6379, accepts one client connection, and exits without reading a command or sending a response.
 
 ## Project layout
 
