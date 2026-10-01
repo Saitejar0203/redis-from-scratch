@@ -1,33 +1,38 @@
-[![progress-banner](https://backend.codecrafters.io/progress/redis/38fe4ea5-b8cc-4548-8903-c199733a28b4)](https://app.codecrafters.io/users/Saitejar0203?r=2qF)
+# Redis from Scratch
 
-This is a starting point for C solutions to the
-["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).
+I'm building Redis in C to deepen my understanding of computer science fundamentals and become better at building systems. This project explores networking, memory, data structures, and how a database works beneath its public interface.
 
-In this challenge, you'll build a toy Redis clone that's capable of handling
-basic commands like `PING`, `SET` and `GET`. Along the way we'll learn about
-event loops, the Redis protocol and more.
+Based on the [CodeCrafters Redis challenge](https://app.codecrafters.io/courses/redis/overview).
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Status
 
-# Passing the first stage
+C starter configured. No exercises implemented yet; the first-stage code in `src/main.c` remains commented out.
 
-The entry point for your Redis implementation is in `src/main.c`. Study and
-uncomment the relevant code, then run the command below to execute the tests on
-our servers:
+## Run locally
+
+Requires a C compiler and CMake. On macOS, install the Xcode Command Line Tools. The starter has no external library dependencies.
 
 ```sh
-codecrafters submit
+./your_program.sh
 ```
 
-That's all!
+The script builds into `build/` and runs the starter, which currently prints a diagnostic message and exits. Once implemented, the server will listen on port 6379.
 
-# Stage 2 & beyond
+## Project layout
 
-Note: This section is for stages 2 and beyond.
+- `src/main.c`: starter and implementation entry point.
+- `CMakeLists.txt`: C23 build configuration.
+- `your_program.sh`: local build and launch script.
+- `.codecrafters/`: hosted build and launch scripts.
 
-1. Ensure you have `cmake` installed locally
-1. Run `./your_program.sh` to run your Redis server, which is implemented in
-   `src/main.c`.
-1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+## Exercise workflow
+
+Keep one commit per exercise. When an exercise is ready:
+
+```sh
+codecrafters test
+codecrafters submit -m "Implement <stage name>"
+git push github master
+```
+
+`origin` is the CodeCrafters submission remote; `github` is the public repository. Setup changes are published to GitHub without submitting an exercise.
