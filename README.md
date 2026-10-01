@@ -7,3 +7,20 @@ Based on the CodeCrafters Redis challenge. Each exercise has its own commit.
 Run with `./your_program.sh` (Python 3.14 and uv), or `python3 -m app.main`.
 
 The preserved C implementation is on the [master branch](https://github.com/Saitejar0203/redis-from-scratch/tree/master). Python development lives on the `python` branch.
+
+## Current progress
+
+Completed through **Handle concurrent clients**: port binding, one PING, repeated PINGs, and independent client threads. The next exercise is **ECHO**.
+
+`app/main.py` contains the server. Each client gets a worker thread and a buffered reader; complete RESP commands are consumed individually even when TCP splits or combines their bytes. Responses use `sendall`. At this stage every complete command receives PONG; command dispatch comes next. Threads are daemon threads, so stopping the process stops them as well.
+
+Run the socket integration checks with `python3 -m unittest discover -s tests -v`. They cover repeated and combined commands, fragmented input, idle concurrent clients, half-close, and malformed input isolation.
+
+## Submit an exercise
+
+```sh
+codecrafters submit -m "Describe the completed exercise"
+git push github HEAD:python
+```
+
+The local `master` branch submits to CodeCrafters; GitHub's `python` branch contains the same commits. The C checkout is separate and unchanged.
