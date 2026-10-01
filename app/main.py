@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 MAX_LINE = 64 * 1024
@@ -56,8 +57,12 @@ def handle_client(connection):
 
 def main():
     with socket.create_server(("localhost", 6379)) as server:
-        connection, address = server.accept()
-        handle_client(connection)
+        while True:
+            connection, address = server.accept()
+            worker = threading.Thread(
+                target=handle_client, args=(connection,), daemon=True
+            )
+            worker.start()
 
 
 if __name__ == "__main__":
